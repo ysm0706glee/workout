@@ -1,4 +1,9 @@
-import type { MetaFunction } from "@remix-run/node";
+import {
+  type MetaFunction,
+  type LoaderFunctionArgs,
+  redirect,
+} from "@remix-run/node";
+import { createServerClient, parse, serialize } from "@supabase/ssr";
 
 export const meta: MetaFunction = () => {
   return [
@@ -7,35 +12,37 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export default function Index() {
-  return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <h1>Welcome to Remix</h1>
-      <ul>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/blog"
-            rel="noreferrer"
-          >
-            15m Quickstart Blog Tutorial
-          </a>
-        </li>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/jokes"
-            rel="noreferrer"
-          >
-            Deep Dive Jokes App Tutorial
-          </a>
-        </li>
-        <li>
-          <a target="_blank" href="https://remix.run/docs" rel="noreferrer">
-            Remix Docs
-          </a>
-        </li>
-      </ul>
-    </div>
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const cookies = parse(request.headers.get("Cookie") ?? "");
+  const headers = new Headers();
+
+  const supabase = createServerClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(key) {
+          return cookies[key];
+        },
+        set(key, value, options) {
+          headers.append("Set-Cookie", serialize(key, value, options));
+        },
+        remove(key, options) {
+          headers.append("Set-Cookie", serialize(key, "", options));
+        },
+      },
+    }
   );
-}
+  const user = await supabase.auth.getUser();
+  if (!user.data.user) {
+    return redirect("/login");
+  } else {
+    return redirect("/profile");
+  }
+};
+
+const Index = () => {
+  return <div>Index</div>;
+};
+
+export default Index;
