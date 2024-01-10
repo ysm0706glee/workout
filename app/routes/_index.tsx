@@ -15,7 +15,6 @@ export const meta: MetaFunction = () => {
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const cookies = parse(request.headers.get("Cookie") ?? "");
   const headers = new Headers();
-
   const supabase = createServerClient(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_ANON_KEY!,
@@ -37,12 +36,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   if (!user.data.user) {
     return redirect("/login");
   } else {
-    return redirect("/profile");
+    return redirect("/calendar");
   }
 };
-
-const Index = () => {
-  return <div>Index</div>;
-};
-
-export default Index;

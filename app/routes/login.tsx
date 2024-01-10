@@ -1,5 +1,6 @@
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
 import { createBrowserClient } from "@supabase/ssr";
+import { TextInput, PasswordInput, Button } from "@mantine/core";
 
 export const loader = () => {
   const env = {
@@ -16,33 +17,28 @@ export const Login = () => {
 
   const loginWithGoogle = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `http://localhost:3000/auth/callback`,
         },
       });
-      if (error) throw error;
-      return navigate("/");
     } catch (error) {
       console.error(error);
     }
   };
 
-  // TODO: any
-  const login = async (event: any) => {
+  const loginWithPassword = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    const email = event.target.email.value;
-    const password = event.target.password.value;
-
+    const email = event.currentTarget.email.value;
+    const password = event.currentTarget.password.value;
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) throw error;
-      return navigate("/");
+      return navigate("/calendar");
     } catch (error) {
       console.error(error);
     }
@@ -50,13 +46,16 @@ export const Login = () => {
 
   return (
     <div>
-      <button onClick={loginWithGoogle}>Login with Google</button>
-      <form onSubmit={login}>
-        <label htmlFor="email">Email</label>
-        <input type="email" name="email" id="email" />
-        <label htmlFor="password">Password</label>
-        <input type="password" name="password" id="password" />
-        <input type="submit" value="Login" />
+      <Button onClick={loginWithGoogle}>Login with Google</Button>
+      <form onSubmit={loginWithPassword}>
+        <TextInput
+          withAsterisk
+          label="Email"
+          placeholder="your@email.com"
+          name="email"
+        />
+        <PasswordInput label="password" name="password" />
+        <Button type="submit">Login</Button>
       </form>
       <Link to="/signup">Sign UP</Link>
     </div>
