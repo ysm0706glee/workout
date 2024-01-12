@@ -33,4 +33,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: 798710ef066bae8c4a159726df47e5b4
           projectName: workout
-          directory: build
+          directory: public
